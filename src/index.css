@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply font-sans;
+}
+
+html,
+body,
+* {
+  font-family: "Roboto", sans-serif !important;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace !important;
+}
+
+/* If you want to apply text color and background for dark mode, uncomment the following: */
+/*
+@layer base {
+  html {
+    @apply text-neutral-800;
+  }
+  html.dark {
+    @apply text-neutral-50;
+    @apply bg-neutral-800;
+  }
+}
+*/
