@@ -25,6 +25,19 @@ function Signup() {
   const [captchaValue, setCaptchaValue] = useState(null);
   const navigate = useNavigate();
   const { setUser, setToken, setFullName } = useAuth();
+  let cart = localStorage.getItem("cart");
+
+  let preSignupCourseId = null;
+
+  if (cart) {
+    const data = JSON.parse(cart);
+
+    if (Array.isArray(data) && data.length > 0) {
+      preSignupCourseId = parseInt(data[0].courseID, 10);
+    } else if (data && data.courseID) {
+      preSignupCourseId = parseInt(data.courseID, 10);
+    }
+  }
 
   const handleChange = (e) =>
     setSignupState({ ...signupState, [e.target.id]: e.target.value });
@@ -63,7 +76,11 @@ function Signup() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...signupState, siteId: 31 }),
+        body: JSON.stringify({
+          ...signupState,
+          siteId: 31,
+          preSignupCourseId: preSignupCourseId,
+        }),
       });
       const data = await response.json();
       // console.log(data);
