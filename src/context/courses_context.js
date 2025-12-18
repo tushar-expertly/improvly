@@ -1,4 +1,4 @@
-import React, { useContext, useReducer, useEffect, useCallback } from "react";
+import React, { useContext, useReducer, useCallback } from "react";
 import { GET_CATEGORIES, GET_COURSES, GET_SINGLE_COURSE } from "../actions";
 import reducer from "../reducers/courses_reducer";
 import courses from "../utils/data";
@@ -60,16 +60,18 @@ export const CoursesProvider = ({ children }) => {
     dispatch({ type: GET_CATEGORIES, payload: categories });
   };
 
-  useEffect(() => {
-    fetchCourse();
-    fetchCategories();
-  }, []);
+  // useEffect(() => {
+  //   fetchCourse();
+  //   fetchCategories();
+  // }, []);
 
   return (
     <CoursesContext.Provider
       value={{
         ...state,
+        fetchCourse,
         fetchSingleCourse,
+        fetchCategories,
       }}
     >
       {children}

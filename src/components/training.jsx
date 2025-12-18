@@ -18,9 +18,18 @@ import {
 } from "mdb-react-ui-kit";
 
 function Training() {
-  const { courses } = useCoursesContext();
+  const { courses, fetchCourse } = useCoursesContext();
   const [loading, setLoading] = useState(true);
-
+  useEffect(() => {
+    if (courses.length === 0) {
+      fetchCourse();
+    }
+  }, []);
+  useEffect(() => {
+    if (courses.length > 0) {
+      setLoading(false);
+    }
+  }, [courses]);
   const filteredCourses = courses.filter(
     (course) => course.archieve === null || course.archieve === false
   );
