@@ -31,6 +31,7 @@ function Cart() {
     setPromoMessage("");
     if (!promoCode) return;
     setPromoLoading(true);
+    const formattedCartItems = transformCartItems(cartItems);
     try {
       const response = await fetch(
         "https://api.goexpertly.com/users/coupons/apply",
@@ -40,7 +41,11 @@ function Cart() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ cartItems, code: promoCode, siteId: 31 }),
+          body: JSON.stringify({
+            cartItems: formattedCartItems,
+            code: promoCode,
+            siteId: 31,
+          }),
         }
       );
 
@@ -78,9 +83,10 @@ function Cart() {
       const stripe = await loadStripe(
         `pk_live_51PBO6KRq04FSuQPhBC5MEWxXDGMTnAaMtygmV7iVc1LQmKfteRLEK8ABqZH1M6tPY6vkRMxpEfOz9s1dXkpLLHw4001vzhBRh3`
       );
+      const formattedCartItems = transformCartItems(cartItems);
 
       const body = {
-        cartItems,
+        cartItems: formattedCartItems,
         couponCode: promoCode ? promoCode : "",
         siteId: 31,
       };
@@ -117,7 +123,18 @@ function Cart() {
       setLoading(false);
     }
   };
-
+  const transformCartItems = (cartItems) => {
+    return cartItems.flatMap((item) =>
+      item.selectedPricing.map((pricing) => ({
+        courseID: item.courseID,
+        image: item.image,
+        course_name: item.course_name,
+        creator: item.creator,
+        price: item.price,
+        selectedPricing: pricing,
+      }))
+    );
+  };
   if (cartItems.length < 1) {
     return (
       <Layout>
