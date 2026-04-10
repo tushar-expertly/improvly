@@ -34,12 +34,31 @@ const SingleTrainingDetail = () => {
     fetchData();
   }, [id, fetchSingleCourse]);
 
+  // useEffect(() => {
+  //   if (single_course?.Pricings?.length) {
+  //     setSelectedPricings([single_course.Pricings[0]]);
+  //   }
+  // }, [single_course]);
   useEffect(() => {
     if (single_course?.Pricings?.length) {
-      setSelectedPricings([single_course.Pricings[0]]);
+      const isPastWebinar = new Date(single_course.webinarDate) < new Date();
+
+      if (isPastWebinar) {
+        const accessOptions = single_course.Pricings.filter(
+          (pricing) =>
+            pricing.sessionType === "Recorded session" ||
+            pricing.sessionType === "Transcript" ||
+            pricing.sessionType === "Recorded Plus Transcript session",
+        );
+
+        if (accessOptions.length > 0) {
+          setSelectedPricings([accessOptions[0]]); // ✅ select first valid option
+        }
+      } else {
+        setSelectedPricings([single_course.Pricings[0]]); // ✅ original behavior
+      }
     }
   }, [single_course]);
-
   const handlePricingToggle = (pricing) => {
     setSelectedPricings((prev) => {
       const exists = prev.find((p) => p.id === pricing.id);
@@ -53,7 +72,7 @@ const SingleTrainingDetail = () => {
   };
   const totalPrice = selectedPricings.reduce(
     (sum, item) => sum + parseFloat(item.price),
-    0
+    0,
   );
 
   if (loading) {
@@ -102,6 +121,13 @@ const SingleTrainingDetail = () => {
   const dateTime = new Date(webinarDate);
 
   const webinarDateUTC = new Date(webinarDate);
+  const isPastWebinar = new Date(webinarDate) < new Date();
+  const accessOptions = Pricings.filter(
+    (pricing) =>
+      pricing.sessionType === "Recorded session" ||
+      pricing.sessionType === "Transcript" ||
+      pricing.sessionType === "Recorded Plus Transcript session",
+  );
 
   const day = webinarDateUTC.getUTCDate();
   const monthYear = webinarDateUTC.toLocaleString("en-US", {
@@ -291,81 +317,159 @@ const SingleTrainingDetail = () => {
           </div>
 
           {/* Right Section */}
-          <div className="bg-white rounded-lg shadow-sm p-6 space-y-5">
-            <div className="text-center">
-              <p className="text-sm text-orange-500 line-through">
-                Was:$
-                {totalPrice != null && totalPrice > 0
-                  ? (totalPrice + selectedPricings.length * 49).toFixed(2)
-                  : "00.00"}
-              </p>
-              <p className="text-3xl font-bold text-blue-600">
-                $
-                {totalPrice != null && totalPrice > 0
-                  ? totalPrice.toFixed(2)
-                  : "00.00"}
-              </p>
-              <p className="text-sm text-red-500">
-                You Save: ${selectedPricings.length * 49}
-              </p>
-            </div>
-            <Link
-              to={selectedPricings.length === 0 ? "#" : "/cart"}
-              className={`group relative w-full flex justify-center py-3 px-4 text-m font-medium rounded-md text-white mt-10
+
+          {isPastWebinar ? (
+            <div>
+              <div className="text-center">
+                <p className="text-sm text-orange-500 line-through">
+                  Was:$
+                  {totalPrice != null && totalPrice > 0
+                    ? (totalPrice + selectedPricings.length * 49).toFixed(2)
+                    : "00.00"}
+                </p>
+                <p className="text-3xl font-bold text-blue-600">
+                  $
+                  {totalPrice != null && totalPrice > 0
+                    ? totalPrice.toFixed(2)
+                    : "00.00"}
+                </p>
+                <p className="text-sm text-red-500">
+                  You Save: ${selectedPricings.length * 49}
+                </p>
+              </div>
+              <Link
+                to={selectedPricings.length === 0 ? "#" : "/cart"}
+                className={`group relative w-full flex justify-center py-3 px-4 text-m font-medium rounded-md text-white mt-10
     ${
       selectedPricings.length === 0
         ? "bg-purple-300 cursor-not-allowed pointer-events-none"
         : "bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
     }
   `}
-              onClick={(e) => {
-                if (selectedPricings.length === 0) {
-                  e.preventDefault();
-                  return;
-                }
-                addToCart(
-                  courseID,
-                  imageSrc,
-                  title,
-                  instructor,
-                  selectedPricings.length > 0 ? totalPrice : discountedPrice,
-                  selectedPricings
-                );
-              }}
-            >
-              Add to Cart
-            </Link>
-
-            <div>
-              <h3 className="font-semibold text-center text-blue-700 text-lg mb-3 border border-blue-300 bg-[#f9f9f9] px-2 py-1">
-                Live Webinar
+                onClick={(e) => {
+                  if (selectedPricings.length === 0) {
+                    e.preventDefault();
+                    return;
+                  }
+                  addToCart(
+                    courseID,
+                    imageSrc,
+                    title,
+                    instructor,
+                    selectedPricings.length > 0 ? totalPrice : discountedPrice,
+                    selectedPricings,
+                  );
+                }}
+              >
+                Add to Cart
+              </Link>
+              <h3 className="font-semibold text-center text-blue-700 text-lg mt-3 border border-blue-300 bg-[#f9f9f9] px-2 py-1">
+                Access Options
               </h3>
 
-              {visiblePricings.map((pricing) => {
+              {accessOptions.map((pricing) => {
                 const isChecked = selectedPricings.some(
-                  (p) => p.id === pricing.id
+                  (p) => p.id === pricing.id,
                 );
 
-                // const isInfoOpen = openInfoId === pricing.id;
-
                 return (
-                  <div
+                  <label
                     key={pricing.id}
-                    className="rounded-md mt-2 overflow-hidden transition-all"
+                    className="flex items-center justify-between p-1 rounded-md mt-2 cursor-pointer"
                   >
-                    <label className="flex items-center justify-between p-1 cursor-pointer">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => handlePricingToggle(pricing)}
-                        />
-                        <span>
-                          {pricing.sessionType} - ${pricing.price}
-                        </span>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handlePricingToggle(pricing)}
+                      />
+                      <span>
+                        {pricing.sessionType} - ${pricing.price}
+                      </span>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          ) : (
+            <>
+              <div className="bg-white rounded-lg shadow-sm p-6 space-y-5">
+                <div className="text-center">
+                  <p className="text-sm text-orange-500 line-through">
+                    Was:$
+                    {totalPrice != null && totalPrice > 0
+                      ? (totalPrice + selectedPricings.length * 49).toFixed(2)
+                      : "00.00"}
+                  </p>
+                  <p className="text-3xl font-bold text-blue-600">
+                    $
+                    {totalPrice != null && totalPrice > 0
+                      ? totalPrice.toFixed(2)
+                      : "00.00"}
+                  </p>
+                  <p className="text-sm text-red-500">
+                    You Save: ${selectedPricings.length * 49}
+                  </p>
+                </div>
+                <Link
+                  to={selectedPricings.length === 0 ? "#" : "/cart"}
+                  className={`group relative w-full flex justify-center py-3 px-4 text-m font-medium rounded-md text-white mt-10
+    ${
+      selectedPricings.length === 0
+        ? "bg-purple-300 cursor-not-allowed pointer-events-none"
+        : "bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+    }
+  `}
+                  onClick={(e) => {
+                    if (selectedPricings.length === 0) {
+                      e.preventDefault();
+                      return;
+                    }
+                    addToCart(
+                      courseID,
+                      imageSrc,
+                      title,
+                      instructor,
+                      selectedPricings.length > 0
+                        ? totalPrice
+                        : discountedPrice,
+                      selectedPricings,
+                    );
+                  }}
+                >
+                  Add to Cart
+                </Link>
 
-                      {/* <button
+                <div>
+                  <h3 className="font-semibold text-center text-blue-700 text-lg mb-3 border border-blue-300 bg-[#f9f9f9] px-2 py-1">
+                    Live Webinar
+                  </h3>
+
+                  {visiblePricings.map((pricing) => {
+                    const isChecked = selectedPricings.some(
+                      (p) => p.id === pricing.id,
+                    );
+
+                    // const isInfoOpen = openInfoId === pricing.id;
+
+                    return (
+                      <div
+                        key={pricing.id}
+                        className="rounded-md mt-2 overflow-hidden transition-all"
+                      >
+                        <label className="flex items-center justify-between p-1 cursor-pointer">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => handlePricingToggle(pricing)}
+                            />
+                            <span>
+                              {pricing.sessionType} - ${pricing.price}
+                            </span>
+                          </div>
+
+                          {/* <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -375,9 +479,9 @@ const SingleTrainingDetail = () => {
                       >
                         i
                       </button> */}
-                    </label>
+                        </label>
 
-                    {/* <div
+                        {/* <div
                       className={`transition-all duration-300 ease-in-out ${
                         isInfoOpen
                           ? "max-h-96 opacity-100"
@@ -394,29 +498,29 @@ const SingleTrainingDetail = () => {
                         <li>Certificate of Participation provided</li>
                       </ul>
                     </div> */}
-                  </div>
-                );
-              })}
+                      </div>
+                    );
+                  })}
 
-              {Pricings.length > 2 && (
-                <button
-                  onClick={() => setShowMore(!showMore)}
-                  className="mt-3 text-blue-600 font-medium flex items-center gap-1 group"
-                >
-                  <span className="underline">
-                    {showMore ? "Less Attendees" : "More Attendees"}
-                  </span>
-                  <span
-                    className={`transform transition-transform group-hover:text-blue-700 ${
-                      showMore ? "rotate-180" : ""
-                    }`}
-                  >
-                    ▾
-                  </span>
-                </button>
-              )}
-            </div>
-            {/* <div>
+                  {Pricings.length > 2 && (
+                    <button
+                      onClick={() => setShowMore(!showMore)}
+                      className="mt-3 text-blue-600 font-medium flex items-center gap-1 group"
+                    >
+                      <span className="underline">
+                        {showMore ? "Less Attendees" : "More Attendees"}
+                      </span>
+                      <span
+                        className={`transform transition-transform group-hover:text-blue-700 ${
+                          showMore ? "rotate-180" : ""
+                        }`}
+                      >
+                        ▾
+                      </span>
+                    </button>
+                  )}
+                </div>
+                {/* <div>
               <h3 className="font-semibold text-center text-blue-700 text-lg mb-3 border border-blue-300 bg-[#f9f9f9] px-4 py-2">
                 Live Webinar
               </h3>
@@ -446,77 +550,81 @@ const SingleTrainingDetail = () => {
               })}
             </div> */}
 
-            <div>
-              <h3 className="font-semibold text-center text-blue-700 text-lg mb-3 border border-blue-300 bg-[#f9f9f9] px-2 py-1">
-                On-Demand
-              </h3>
+                <div>
+                  <h3 className="font-semibold text-center text-blue-700 text-lg mb-3 border border-blue-300 bg-[#f9f9f9] px-2 py-1">
+                    On-Demand
+                  </h3>
 
-              {Pricings?.filter(
-                (pricing) =>
-                  pricing.sessionType === "Recorded session" ||
-                  pricing.sessionType === "Transcript"
-              ).map((pricing) => {
-                const isChecked = selectedPricings.some(
-                  (p) => p.id === pricing.id
-                );
+                  {Pricings?.filter(
+                    (pricing) =>
+                      pricing.sessionType === "Recorded session" ||
+                      pricing.sessionType === "Transcript",
+                  ).map((pricing) => {
+                    const isChecked = selectedPricings.some(
+                      (p) => p.id === pricing.id,
+                    );
 
-                return (
-                  <label
-                    key={pricing.id}
-                    className="flex items-center justify-between  p-1 rounded-md mt-2 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => handlePricingToggle(pricing)}
-                      />
-                      <span>
-                        {pricing.sessionType} - ${pricing.price}
-                      </span>
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
+                    return (
+                      <label
+                        key={pricing.id}
+                        className="flex items-center justify-between  p-1 rounded-md mt-2 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => handlePricingToggle(pricing)}
+                          />
+                          <span>
+                            {pricing.sessionType} - ${pricing.price}
+                          </span>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
 
-            <div>
-              <h3 className="font-semibold text-center text-blue-700 text-lg mb-3 border border-blue-300 bg-[#f9f9f9] px-2 py-1">
-                Value Packs
-              </h3>
-              {Pricings?.filter(
-                (pricing) =>
-                  pricing.sessionType === "Live Plus Recorded session" ||
-                  pricing.sessionType === "Live Plus Transcript session" ||
-                  pricing.sessionType === "Recorded Plus Transcript session" ||
-                  pricing.sessionType === "Group Session For 10 Attendees" ||
-                  pricing.sessionType ===
-                    "Group Session For More Than 10 Attendees"
-              ).map((pricing) => {
-                const isChecked = selectedPricings.some(
-                  (p) => p.id === pricing.id
-                );
+                <div>
+                  <h3 className="font-semibold text-center text-blue-700 text-lg mb-3 border border-blue-300 bg-[#f9f9f9] px-2 py-1">
+                    Value Packs
+                  </h3>
+                  {Pricings?.filter(
+                    (pricing) =>
+                      pricing.sessionType === "Live Plus Recorded session" ||
+                      pricing.sessionType === "Live Plus Transcript session" ||
+                      pricing.sessionType ===
+                        "Recorded Plus Transcript session" ||
+                      pricing.sessionType ===
+                        "Group Session For 10 Attendees" ||
+                      pricing.sessionType ===
+                        "Group Session For More Than 10 Attendees",
+                  ).map((pricing) => {
+                    const isChecked = selectedPricings.some(
+                      (p) => p.id === pricing.id,
+                    );
 
-                return (
-                  <label
-                    key={pricing.id}
-                    className="flex items-center justify-between  p-1 rounded-md mt-2 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => handlePricingToggle(pricing)}
-                      />
-                      <span>
-                        {pricing.sessionType} - ${pricing.price}
-                      </span>
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
+                    return (
+                      <label
+                        key={pricing.id}
+                        className="flex items-center justify-between  p-1 rounded-md mt-2 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => handlePricingToggle(pricing)}
+                          />
+                          <span>
+                            {pricing.sessionType} - ${pricing.price}
+                          </span>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </Layout>
