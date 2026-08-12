@@ -61,9 +61,7 @@ const PricingOption = ({ pricing, isChecked, onToggle, dark }) => (
       </span>
       <span
         className={`shrink-0 text-[13px] tabular-nums ${
-          dark
-            ? "font-semibold text-[#f0a28a]"
-            : "font-semibold text-stone-900"
+          dark ? "font-semibold text-[#f0a28a]" : "font-semibold text-stone-900"
         }`}
       >
         ${pricing.price}
@@ -92,17 +90,13 @@ const PricingGroup = ({ title, dark, children }) => (
   <div>
     <div
       className={`px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] ${
-        dark
-          ? "bg-white/5 text-[#f0a28a]"
-          : "bg-stone-100 text-stone-500"
+        dark ? "bg-white/5 text-[#f0a28a]" : "bg-stone-100 text-stone-500"
       }`}
     >
       {title}
     </div>
     <div
-      className={`divide-y ${
-        dark ? "divide-white/10" : "divide-stone-100"
-      }`}
+      className={`divide-y ${dark ? "divide-white/10" : "divide-stone-100"}`}
     >
       {children}
     </div>
@@ -126,8 +120,7 @@ const PriceSummary = ({ totalPrice, selectedCount, dark }) => (
         dark ? "text-white" : "text-[#1b2a41]"
       }`}
     >
-      $
-      {totalPrice != null && totalPrice > 0 ? totalPrice.toFixed(2) : "00.00"}
+      ${totalPrice != null && totalPrice > 0 ? totalPrice.toFixed(2) : "00.00"}
     </p>
     <p
       className={`mt-2 text-xs font-medium ${
@@ -317,8 +310,7 @@ const SingleTrainingDetail = () => {
     ? Pricings.slice(0, 5)
     : Pricings.slice(0, 2);
 
-  const cartPrice =
-    selectedPricings.length > 0 ? totalPrice : discountedPrice;
+  const cartPrice = selectedPricings.length > 0 ? totalPrice : discountedPrice;
   const cartDisabled = selectedPricings.length === 0;
 
   const contentBlocks = [
@@ -410,9 +402,7 @@ const SingleTrainingDetail = () => {
                 onClick={() => setShowMore(!showMore)}
                 className="-mt-3 flex w-full items-center justify-center gap-1.5 py-2 text-xs font-medium text-[#f0a28a] transition-colors hover:text-white"
               >
-                <span>
-                  {showMore ? "Less Attendees" : "More Attendees"}
-                </span>
+                <span>{showMore ? "Less Attendees" : "More Attendees"}</span>
                 <span
                   className={`inline-block transition-transform duration-200 ${
                     showMore ? "rotate-180" : ""
@@ -449,10 +439,8 @@ const SingleTrainingDetail = () => {
                 (pricing) =>
                   pricing.sessionType === "Live Plus Recorded session" ||
                   pricing.sessionType === "Live Plus Transcript session" ||
-                  pricing.sessionType ===
-                    "Recorded Plus Transcript session" ||
-                  pricing.sessionType ===
-                    "Group Session For 10 Attendees" ||
+                  pricing.sessionType === "Recorded Plus Transcript session" ||
+                  pricing.sessionType === "Group Session For 10 Attendees" ||
                   pricing.sessionType ===
                     "Group Session For More Than 10 Attendees",
               ).map((pricing) => {
@@ -593,7 +581,7 @@ const SingleTrainingDetail = () => {
                     Schedule
                   </p>
                   <p className="text-sm font-semibold text-[#1b2a41]">
-                    {weekday}
+                    {weekday}, {day} {monthYear}
                   </p>
                   <p className="text-xs text-stone-500">
                     {formattedTimeEST} EST / {formattedTimePST} PST
@@ -644,7 +632,11 @@ const SingleTrainingDetail = () => {
               </div>
 
               {contentBlocks.map((block, i) => (
-                <ContentSection key={block.label} index={i + 1} label={block.label}>
+                <ContentSection
+                  key={block.label}
+                  index={i + 1}
+                  label={block.label}
+                >
                   {parse(block.body)}
                 </ContentSection>
               ))}
